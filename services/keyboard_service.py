@@ -9,7 +9,7 @@ def _pyautogui():
     return pyautogui
 
 
-def type_text(text: str, interval_seconds: float = 0.0) -> None:
+def type_text(text: str, interval_seconds: float = 0.05) -> None:
     pyautogui = _pyautogui()
     pyautogui.write(text, interval=interval_seconds)
 
