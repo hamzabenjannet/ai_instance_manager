@@ -82,7 +82,8 @@ def _yolo_detect(image_path: Path, use_gpu: bool = False) -> list[BoundingBox]:
         except Exception:
             device = "cpu"
 
-    model = YOLO("yolov8n.pt")
+    # model = YOLO("weights/yolov8n.pt")
+    model = YOLO("weights/icon_detect/model.pt")  # was: YOLO("yolov8n.pt")
     results = model(str(image_path), verbose=False, device=device)
 
     boxes: list[BoundingBox] = []
