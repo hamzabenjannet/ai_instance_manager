@@ -1,0 +1,99 @@
+.
+├── README.md
+├── __pycache__
+│   ├── main.cpython-311.pyc
+│   └── main.cpython-313.pyc
+├── ai_instance_manager.code-workspace
+├── app
+│   ├── __pycache__
+│   │   ├── __init__.cpython-311.pyc
+│   │   ├── __init__.cpython-313.pyc
+│   │   ├── config.cpython-311.pyc
+│   │   ├── config.cpython-313.pyc
+│   │   ├── database.cpython-311.pyc
+│   │   ├── database.cpython-313.pyc
+│   │   ├── logging_service.cpython-311.pyc
+│   │   └── logging_service.cpython-313.pyc
+│   ├── config.py
+│   ├── database.py
+│   └── logging_service.py
+├── folder_structure.md
+├── idea.md
+├── main.py
+├── models
+│   ├── __pycache__
+│   │   ├── __init__.cpython-311.pyc
+│   │   ├── __init__.cpython-313.pyc
+│   │   ├── event_log_model.cpython-311.pyc
+│   │   ├── event_log_model.cpython-313.pyc
+│   │   ├── keyboard_models.cpython-311.pyc
+│   │   ├── keyboard_models.cpython-313.pyc
+│   │   ├── mouse_models.cpython-311.pyc
+│   │   └── mouse_models.cpython-313.pyc
+│   ├── event_log_model.py
+│   ├── keyboard_models.py
+│   └── mouse_models.py
+├── requirements.txt
+├── roadmap.md
+├── routes
+│   ├── __pycache__
+│   │   ├── __init__.cpython-311.pyc
+│   │   ├── __init__.cpython-313.pyc
+│   │   ├── health.cpython-311.pyc
+│   │   ├── health.cpython-313.pyc
+│   │   ├── keyboard.cpython-311.pyc
+│   │   ├── keyboard.cpython-313.pyc
+│   │   ├── mouse.cpython-311.pyc
+│   │   ├── mouse.cpython-313.pyc
+│   │   ├── screen.cpython-311.pyc
+│   │   ├── screen.cpython-313.pyc
+│   │   ├── vision.cpython-311.pyc
+│   │   └── vision.cpython-313.pyc
+│   ├── health.py
+│   ├── keyboard.py
+│   ├── mouse.py
+│   ├── screen.py
+│   └── vision.py
+├── run.sh
+├── services
+│   ├── __pycache__
+│   │   ├── __init__.cpython-311.pyc
+│   │   ├── __init__.cpython-313.pyc
+│   │   ├── keyboard_service.cpython-311.pyc
+│   │   ├── keyboard_service.cpython-313.pyc
+│   │   ├── mouse_service.cpython-311.pyc
+│   │   ├── mouse_service.cpython-313.pyc
+│   │   ├── screen_service.cpython-311.pyc
+│   │   ├── screen_service.cpython-313.pyc
+│   │   ├── vision_service.cpython-311.pyc
+│   │   └── vision_service.cpython-313.pyc
+│   ├── keyboard_service.py
+│   ├── mouse_service.py
+│   ├── screen_service.py
+│   └── vision_service.py
+├── setup_and_run.md
+├── tests
+│   ├── __pycache__
+│   │   ├── __init__.cpython-313.pyc
+│   │   ├── test_keyboard.cpython-311.pyc
+│   │   ├── test_keyboard.cpython-313.pyc
+│   │   ├── test_mouse.cpython-311.pyc
+│   │   ├── test_mouse.cpython-313.pyc
+│   │   ├── test_screen.cpython-311.pyc
+│   │   ├── test_screen.cpython-313.pyc
+│   │   ├── test_vision.cpython-311.pyc
+│   │   └── test_vision.cpython-313.pyc
+│   ├── test_keyboard.py
+│   ├── test_mouse.py
+│   ├── test_screen.py
+│   └── test_vision.py
+├── to-do.md
+├── tree.log
+└── utils
+    ├── __pycache__
+    │   ├── __init__.cpython-313.pyc
+    │   ├── helpers.cpython-311.pyc
+    │   └── helpers.cpython-313.pyc
+    └── helpers.py
+
+14 directories, 83 files
