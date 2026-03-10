@@ -16,6 +16,9 @@ pip install ultralytics
 pip install opencv-python-headless
 
 pip install transformers timm einops easyocr
+
+pip install "transformers==4.38.2"
+pip list --format=freeze | grep -v "@ file://" > requirements.txt
  
 # CUDA only
 pip install torch torchvision --index-url https://download.pytorch.org/whl/cu124
@@ -23,6 +26,7 @@ pip list --format=freeze | grep -v "@ file://" > requirements.txt
 # CUDA only
 
 sudo apt install gnome-screenshot -y
+
 
 pip list --format=freeze | grep -v "@ file://" > requirements.txt
 # install from requirements.txt

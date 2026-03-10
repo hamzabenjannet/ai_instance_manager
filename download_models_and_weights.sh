@@ -1,13 +1,9 @@
 #!/bin/bash
 
-mkdir -p weights
+export HF_TOKEN=hf_...
 
-for f in icon_detect/model.pt icon_detect/model.yaml icon_detect/train_args.yaml; do
-  huggingface-cli download microsoft/OmniParser-v2.0 "$f" --local-dir weights
-done
+# Phase 1 only (when you just need the icon detection model)
+# python3 download_models_and_weights.py --detect-only
 
-for f in icon_caption/config.json icon_caption/generation_config.json icon_caption/model.safetensors; do
-  huggingface-cli download microsoft/OmniParser-v2.0 "$f" --local-dir weights
-done
-
-mv weights/icon_caption weights/icon_caption_florence
+# Everything (when you're ready for Florence-2 captioning)
+python3 download_models_and_weights.py

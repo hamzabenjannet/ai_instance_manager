@@ -1,1 +1,6 @@
 *.pt
+.cache
+
+icon_caption_florence
+icon_caption
+icon_detect

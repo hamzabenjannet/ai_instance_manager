@@ -25,6 +25,13 @@ class VisionDetectRequest(BaseModel):
         default=True,
         description="Run OpenCV heuristic UI element detection (windows, toolbars, stripes)",
     )
+    use_florence: bool = Field(
+        default=True,
+        description=(
+            "Run Florence-2 for natural-language element description. "
+            "WARNING: slow on CPU (~0.5-2s per box). Use async/queue for production."
+        ),
+    )
     confidence_threshold: float = Field(
         default=0.25,
         ge=0.0,
@@ -62,6 +69,7 @@ def detect_elements(request: VisionDetectRequest) -> dict[str, Any]:
             image_name=request.image_name,
             use_yolo=request.use_yolo,
             use_cv2_heuristic=request.use_cv2_heuristic,
+            use_florence=request.use_florence,     # Phase 2 — opt-in, slow on CPU
             confidence_threshold=request.confidence_threshold,
             annotate=request.annotate,
             use_gpu=request.use_gpu,
@@ -78,6 +86,9 @@ def detect_elements(request: VisionDetectRequest) -> dict[str, Any]:
         "success",
         {
             "image_name": request.image_name,
+            "use_yolo": request.use_yolo,
+            "use_cv2_heuristic": request.use_cv2_heuristic,
+            "confidence_threshold": request.confidence_threshold,
             "count": result["count"],
             "use_gpu": request.use_gpu,
             "annotated_path": result.get("annotated_path"),
