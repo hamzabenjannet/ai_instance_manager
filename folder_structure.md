@@ -14,11 +14,7 @@ ai-instance-manager/
 ├── app/
 │   ├── config.py                           # App settings, env variables
 │   ├── logging_service.py                  # MongoDB logging utility (used by all endpoints)
-│   ├── database.py                         # MongoDB connection
-│   └── routes/
-│       ├── mouse.py                        # Mouse position, move, click endpoints
-│       ├── keyboard.py                     # Keyboard input endpoints
-│       └── screenshot.py                   # Screenshot endpoints
+│   └── database.py                         # MongoDB connection
 │
 ├── routes/
 │   ├── mouse.py                            # Mouse position, move, click endpoints
