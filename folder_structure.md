@@ -1,5 +1,5 @@
 ```tree
-ai-instance-manager/
+ai_instance_manager/
 │
 ├── main.py                                 # FastAPI app entry point, route registration
 ├── requirements.txt                        # All dependencies
@@ -9,7 +9,8 @@ ai-instance-manager/
 ├── run.sh                                  # Run the FastAPI app with uvicorn
 ├── roadmap.md                              # Project roadmap
 ├── ai_instance_manager.code-workspace      # VS Code workspace file
-├── setup_and_run.md                       # Installation and run instructions
+├── setup_and_run.md                        # Installation and run instructions
+├── to-do.md                                # List of tasks to do
 │
 ├── app/
 │   ├── config.py                           # App settings, env variables
