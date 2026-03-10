@@ -12,6 +12,8 @@ pip install fastapi uvicorn
 
 pip install --upgrade Pillow
 
+pip install ultralytics
+
 sudo apt install gnome-screenshot -y
 
 pip list --format=freeze | grep -v "@ file://" > requirements.txt
