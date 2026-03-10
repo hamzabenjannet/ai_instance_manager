@@ -9,6 +9,11 @@ conda activate ai_instance_manager
 # pip install <NEEDED_MODULES>
 pip install fastapi uvicorn
 # pip freeze > requirements.txt
+
+pip install --upgrade Pillow
+
+sudo apt install gnome-screenshot -y
+
 pip list --format=freeze | grep -v "@ file://" > requirements.txt
 # install from requirements.txt
 pip install -r requirements.txt

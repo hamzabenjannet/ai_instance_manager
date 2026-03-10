@@ -16,4 +16,4 @@ class MoveMouseRequest(BaseModel):
 
 
 class MouseClickRequest(BaseModel):
-    button: Literal["left", "right", "middle"] = "left"
+    button: Literal["left", "right", "middle", "doubleLeft"] = "left"

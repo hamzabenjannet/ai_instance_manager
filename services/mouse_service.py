@@ -22,6 +22,12 @@ def move_to(x: int, y: int) -> None:
     pyautogui.moveTo(x, y)
 
 
-def click(button: Literal["left", "right", "middle"] = "left") -> None:
+def click(button: Literal["left", "right", "middle", "doubleLeft"] = "left") -> None:
     pyautogui = _pyautogui()
-    pyautogui.click(button=button)
+    try:
+        if button == "doubleLeft":
+            pyautogui.doubleClick(button="left")
+        else:
+            pyautogui.click(button=button)
+    except Exception as e:
+        print(f"Error clicking: {e}")
