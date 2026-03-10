@@ -8,7 +8,8 @@ source activate ai_instance_manager
 conda activate ai_instance_manager
 # pip install <NEEDED_MODULES>
 pip install fastapi uvicorn
-pip freeze > requirements.txt
+# pip freeze > requirements.txt
+pip list --format=freeze | grep -v "@ file://" > requirements.txt
 # install from requirements.txt
 pip install -r requirements.txt
 

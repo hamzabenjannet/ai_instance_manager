@@ -9,6 +9,7 @@
 - Created missing folders and files described in `folder_structure.md`.
 - Registered routers in `main.py`.
 - Removed `__init__.py` files (per request).
+- Added `PyAutoGUI` to `requirements.txt`.
 
 ## Next
 
@@ -32,6 +33,13 @@
 ```bash
 cd ai_instance_manager
 python3 -m pip install -r requirements.txt
+```
+
+### Validate PyAutoGUI import
+
+```bash
+cd ai_instance_manager
+python3 -c "import pyautogui; print('pyautogui', pyautogui.__version__)"
 ```
 
 ### Run API
