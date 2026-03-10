@@ -33,6 +33,10 @@
 │   ├── event_log_model.py
 │   ├── keyboard_models.py
 │   └── mouse_models.py
+├── output
+│   ├── json
+│   └── screenshots
+│       └── screenshot_2026-03-10_14-44-52.png
 ├── requirements.txt
 ├── roadmap.md
 ├── routes
@@ -96,4 +100,4 @@
     │   └── helpers.cpython-313.pyc
     └── helpers.py
 
-14 directories, 83 files
+17 directories, 84 files
