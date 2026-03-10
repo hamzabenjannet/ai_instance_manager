@@ -38,6 +38,7 @@ nvidia-nvjitlink-cu12==12.8.93
 nvidia-nvshmem-cu12==3.4.5
 nvidia-nvtx-cu12==12.8.90
 opencv-python==4.13.0.92
+opencv-python-headless==4.13.0.92
 packaging==26.0
 pillow==12.1.1
 pip==26.0.1

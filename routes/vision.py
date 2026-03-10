@@ -1,6 +1,6 @@
 from typing import Any
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
 
 from app.logging_service import event_logger
@@ -23,7 +23,7 @@ class VisionDetectRequest(BaseModel):
     use_yolo: bool = Field(default=True, description="Run YOLOv8 object detection")
     use_cv2_heuristic: bool = Field(
         default=True,
-        description="Run OpenCV heuristic UI element detection (windows, toolbars, buttons, stripes)",
+        description="Run OpenCV heuristic UI element detection (windows, toolbars, stripes)",
     )
     confidence_threshold: float = Field(
         default=0.25,
@@ -35,6 +35,15 @@ class VisionDetectRequest(BaseModel):
         default=True,
         description="Save an annotated copy of the image to output/annotated/",
     )
+    use_gpu: bool = Field(
+        default=False,
+        description=(
+            "Use GPU acceleration for YOLO inference. "
+            "Automatically selects CUDA (Nvidia) or MPS (Apple Silicon). "
+            "Falls back to CPU silently if no GPU is available. "
+            "Keep false until GPU passthrough is configured in Docker."
+        ),
+    )
 
 
 @router.post("/detect")
@@ -42,11 +51,11 @@ def detect_elements(request: VisionDetectRequest) -> dict[str, Any]:
     """
     Detect UI elements in a screenshot.
 
-    Runs YOLOv8 (object detection) and/or an OpenCV heuristic pass
-    (window regions, title bars, toolbars) on the requested image file
-    and returns a list of bounding boxes with coordinates and labels.
+    Runs YOLOv8 and/or OpenCV heuristic detection on the requested image file
+    and returns bounding boxes with coordinates, labels, and center points.
 
-    The annotated image is saved to **output/annotated/** if `annotate=true`.
+    - **use_gpu**: keep false for CPU-only containers; set true when CUDA/MPS is available.
+    - Annotated image saved to output/annotated/ when annotate=true.
     """
     try:
         result = vision_service.detect_ui_elements(
@@ -55,6 +64,7 @@ def detect_elements(request: VisionDetectRequest) -> dict[str, Any]:
             use_cv2_heuristic=request.use_cv2_heuristic,
             confidence_threshold=request.confidence_threshold,
             annotate=request.annotate,
+            use_gpu=request.use_gpu,
         )
     except FileNotFoundError as e:
         event_logger.log("vision.detect", "error", {"error": str(e), "image_name": request.image_name})
@@ -69,6 +79,7 @@ def detect_elements(request: VisionDetectRequest) -> dict[str, Any]:
         {
             "image_name": request.image_name,
             "count": result["count"],
+            "use_gpu": request.use_gpu,
             "annotated_path": result.get("annotated_path"),
             "errors": result.get("errors", []),
         },

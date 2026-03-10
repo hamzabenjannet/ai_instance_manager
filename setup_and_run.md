@@ -13,6 +13,7 @@ pip install fastapi uvicorn
 pip install --upgrade Pillow
 
 pip install ultralytics
+pip install opencv-python-headless
 
 sudo apt install gnome-screenshot -y
 
