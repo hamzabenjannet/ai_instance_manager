@@ -159,6 +159,7 @@ def _florence_caption(image_path: Path, boxes: list[BoundingBox]) -> list[Boundi
         str(_ICON_CAPTION_DIR),
         trust_remote_code=True,
         attn_implementation="eager",  # bypasses flash_attn requirement — CPU safe
+        low_cpu_mem_usage=False,   # required for eager mode without CUDA
     )
     model.eval()
 

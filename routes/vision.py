@@ -26,7 +26,7 @@ class VisionDetectRequest(BaseModel):
         description="Run OpenCV heuristic UI element detection (windows, toolbars, stripes)",
     )
     use_florence: bool = Field(
-        default=True,
+        default=False,
         description=(
             "Run Florence-2 for natural-language element description. "
             "WARNING: slow on CPU (~0.5-2s per box). Use async/queue for production."
