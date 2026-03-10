@@ -1,7 +1,8 @@
 ## Status
 
 - Current repo contains FastAPI skeleton + routes/services/models scaffolding.
-- MongoDB + RabbitMQ + YOLO are not implemented yet (only placeholders/stubs).
+- MongoDB + RabbitMQ are not implemented yet (only placeholders/stubs).
+- Vision detection is implemented (YOLOv8 via `ultralytics` + optional OpenCV heuristic detection).
 - Mouse/keyboard/screenshot services use `pyautogui` and persist screenshots to `output/screenshots/`.
 - Requirements are now pinned heavily (including `pip`, `setuptools`, `wheel`).
 
@@ -14,6 +15,7 @@
 - Added screenshot persistence to `output/screenshots/`.
 - Added mouse double-click support (`doubleLeft`).
 - Added `output/` directories with `.gitkeep`/`.gitignore`.
+- Implemented `/vision/detect` endpoint using screenshot file input (`image_name`).
 
 ## Next
 
@@ -30,7 +32,10 @@
 - `python3 -m pip install -r requirements.txt`: OK (all requirements already satisfied)
 - `uvicorn main:app --reload --host 0.0.0.0 --port 42014`: OK (startup complete)
 - `python3 -m unittest discover -s tests -p 'test_*.py'`: OK (4 tests passed)
-- PyAutoGUI-driven endpoints not yet validated end-to-end.
+- `GET /health`: OK (`status=ok`)
+- `GET /mouse/position`: OK (returns x/y)
+- `GET /screen/size`: OK (returns width/height)
+- `GET /screen/screenshot`: OK (returns base64 PNG). Note: `curl: (23) Failure writing output to destination` is expected when piping into `head` (head closes the pipe early).
 
 ## Git Log (recent)
 
@@ -47,6 +52,7 @@
 - `screen_service.take_screenshot_base64()` returns `str(e)` on failure; API will treat it as base64 data.
 - `mouse_service.click()` prints errors instead of raising/logging; failures can look like success.
 - `requirements.txt` pins `pip/setuptools/wheel`; may be unnecessary and can cause conflicts.
+- `PressKeyRequest.interval_seconds` exists but is not used by `/keyboard/press`.
 
 ## Commands to Run (in vns-server container)
 
@@ -71,6 +77,13 @@ curl -sS http://localhost:42014/health
 curl -sS http://localhost:42014/mouse/position
 curl -sS http://localhost:42014/screen/size
 curl -sS http://localhost:42014/screen/screenshot | head -c 200 && echo
+```
+
+### Screenshot response size (avoid pipe errors)
+
+```bash
+curl -sS http://localhost:42014/screen/screenshot -o /tmp/screenshot.json
+python3 -c "import json; d=json.load(open('/tmp/screenshot.json')); print('encoding=', d.get('encoding')); print('base64_len=', len(d.get('data','')))"
 ```
 
 ### Run API
