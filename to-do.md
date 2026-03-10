@@ -3,8 +3,10 @@
 - Current repo contains FastAPI skeleton + routes/services/models scaffolding.
 - MongoDB + RabbitMQ are not implemented yet (only placeholders/stubs).
 - Vision detection is implemented (YOLOv8 via `ultralytics` + optional OpenCV heuristic detection).
+- Florence-2 caption enrichment is implemented but disabled by default (CPU cost).
 - Mouse/keyboard/screenshot services use `pyautogui` and persist screenshots to `output/screenshots/`.
-- Requirements are now pinned heavily (including `pip`, `setuptools`, `wheel`).
+- Weights live under `weights/` and annotated images under `output/annotated/`.
+- Requirements are now pinned heavily (including `pip`, `setuptools`, `wheel`, `torch+cpu`, `easyocr`, `transformers`).
 
 ## Done
 
@@ -16,16 +18,19 @@
 - Added mouse double-click support (`doubleLeft`).
 - Added `output/` directories with `.gitkeep`/`.gitignore`.
 - Implemented `/vision/detect` endpoint using screenshot file input (`image_name`).
+- Added model/weights download scripts (`download_models_and_weights.py/.sh`).
+- Added GPU toggle for YOLO inference (`use_gpu` flag).
 
 ## Next
 
 1. Stabilize dependency installation (revisit `requirements.txt` pins and portability).
-2. Fix error handling for mouse/screen services (no `print`, no `return str(e)`).
-3. Implement MongoDB event logging (replace in-memory logger with Mongo-backed logger).
-4. Add request/response models per endpoint (expand typing/validation).
-5. Add real screen/mouse/keyboard implementations (permissions + runtime checks).
-6. Define vision pipeline contracts (YOLO model loading, input/output formats, storage).
-7. Add health checks for external deps (Mongo, RabbitMQ, Ollama).
+2. Split requirements into base vs vision extras (avoid huge default install).
+3. Fix error handling for mouse/screen services (no `print`, no `return str(e)`).
+4. Align keyboard press behavior with models (`interval_seconds` usage).
+5. Implement MongoDB event logging (replace in-memory logger with Mongo-backed logger).
+6. Add health checks for external deps (Mongo, RabbitMQ, Ollama, vision weights).
+7. Add `/vision/detect` smoke test flow (document + minimal test case).
+8. Remove token placeholder from `download_models_and_weights.sh` and document `HF_TOKEN` usage.
 
 ## Last Validation (vns-server container)
 
@@ -39,13 +44,17 @@
 
 ## Git Log (recent)
 
+- `0a6b80c` fix(vision): disable florence by default to avoid CPU slowdown
+- `33dbe59` feat(vision): integrate Florence-2 for natural-language UI element captioning
+- `20c02ad` chore: update model weights and dependencies for icon detection
+- `f862ca7` docs: update to-do.md with implemented endpoints and known issues
+- `d8d5630` feat(vision): add GPU support and improve detection serialization
+- `9834c1a` feat(vision): add YOLOv8 and OpenCV UI detection service
+- `8ff6ea0` chore: ignore .DS_Store files in git
+- `6267290` chore: add output directories for json and screenshots
+- `52cbe66` fix(keyboard): set default typing interval to 0.05 seconds
+- `5a2b371` docs: update to-do.md with recent changes and future tasks
 - `b4859bf` feat: add double-click support and screenshot persistence
-- `88c0f86` chore: add empty .gitkeep files for output directories
-- `30f4c41` chore: add tree.log to document project structure
-- `e4a378d` docs: update installation instructions and requirements
-- `d528f95` feat: add core services, routes, models, and tests for AI instance manager
-- `180d9e2` refactor: move routes to top-level directory for better organization
-- `9c5996c` feat: initialize FastAPI project for AI instance manager
 
 ## Issues / Notes
 
@@ -53,6 +62,8 @@
 - `mouse_service.click()` prints errors instead of raising/logging; failures can look like success.
 - `requirements.txt` pins `pip/setuptools/wheel`; may be unnecessary and can cause conflicts.
 - `PressKeyRequest.interval_seconds` exists but is not used by `/keyboard/press`.
+- `requirements.txt` includes both `opencv-python` and `opencv-python-headless`; pick one for the container.
+- `download_models_and_weights.sh` contains an `HF_TOKEN` placeholder; do not commit real tokens.
 
 ## Commands to Run (in vns-server container)
 
@@ -84,6 +95,26 @@ curl -sS http://localhost:42014/screen/screenshot | head -c 200 && echo
 ```bash
 curl -sS http://localhost:42014/screen/screenshot -o /tmp/screenshot.json
 python3 -c "import json; d=json.load(open('/tmp/screenshot.json')); print('encoding=', d.get('encoding')); print('base64_len=', len(d.get('data','')))"
+```
+
+### Vision detect (use latest screenshot filename)
+
+```bash
+ls -1t output/screenshots | head -n 1
+```
+
+```bash
+curl -sS http://localhost:42014/vision/detect \
+  -H 'Content-Type: application/json' \
+  -d '{"image_name":"output/screenshots/REPLACE_WITH_FILENAME.png","use_yolo":true,"use_cv2_heuristic":true,"confidence_threshold":0.25,"annotate":true,"use_gpu":false}' \
+  | head -c 400 && echo
+```
+
+### Download weights (OmniParser v2)
+
+```bash
+cd ai_instance_manager
+python3 download_models_and_weights.py --detect-only
 ```
 
 ### Run API
