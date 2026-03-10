@@ -17,6 +17,9 @@
 │   ├── config.py
 │   ├── database.py
 │   └── logging_service.py
+├── clear_cache.sh
+├── download_models_and_weights.py
+├── download_models_and_weights.sh
 ├── folder_structure.md
 ├── idea.md
 ├── main.py
@@ -34,9 +37,12 @@
 │   ├── keyboard_models.py
 │   └── mouse_models.py
 ├── output
+│   ├── annotated
+│   │   └── annotated_screenshot_2026-03-10_18-34-32.png
 │   ├── json
 │   └── screenshots
-│       └── screenshot_2026-03-10_14-44-52.png
+│       ├── screenshot_2026-03-10_14-44-52.png
+│       └── screenshot_2026-03-10_18-34-32.png
 ├── requirements.txt
 ├── roadmap.md
 ├── routes
@@ -93,11 +99,20 @@
 │   └── test_vision.py
 ├── to-do.md
 ├── tree.log
-└── utils
-    ├── __pycache__
-    │   ├── __init__.cpython-313.pyc
-    │   ├── helpers.cpython-311.pyc
-    │   └── helpers.cpython-313.pyc
-    └── helpers.py
+├── utils
+│   ├── __pycache__
+│   │   ├── __init__.cpython-313.pyc
+│   │   ├── helpers.cpython-311.pyc
+│   │   └── helpers.cpython-313.pyc
+│   └── helpers.py
+└── weights
+    ├── icon_caption_florence
+    │   ├── config.json
+    │   ├── generation_config.json
+    │   └── model.safetensors
+    └── icon_detect
+        ├── model.pt
+        ├── model.yaml
+        └── train_args.yaml
 
-17 directories, 84 files
+21 directories, 95 files
