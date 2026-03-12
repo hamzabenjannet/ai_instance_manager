@@ -11,7 +11,9 @@ router = APIRouter(prefix="/mouse", tags=["mouse"])
 @router.get("/position", response_model=MousePositionResponse)
 def get_mouse_position() -> MousePositionResponse:
     try:
+        logger.debug("get_mouse_position called")
         x, y = mouse_service.get_position()
+        logger.debug("mouse position: x=%d, y=%d", x, y)
     except RuntimeError as e:
         event_logger.log("mouse.position", "error", {"error": str(e)})
         raise HTTPException(status_code=501, detail=str(e)) from e
@@ -23,6 +25,7 @@ def get_mouse_position() -> MousePositionResponse:
 @router.post("/move")
 def move_mouse(request: MoveMouseRequest) -> dict[str, str]:
     try:
+        logger.debug("move_mouse called with x=%d, y=%d", request.x, request.y)
         mouse_service.move_to(request.x, request.y)
     except RuntimeError as e:
         event_logger.log("mouse.move", "error", {"error": str(e), "x": request.x, "y": request.y})

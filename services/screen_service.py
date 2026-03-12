@@ -42,6 +42,7 @@ def take_screenshot_base64() -> str:
         
         # read back from file and encode
         with open(image_absolute_path, "rb") as f:
-            return base64.b64encode(f.read()).decode("ascii")
+            encoded = base64.b64encode(f.read()).decode("ascii")
+        return {"base64": encoded, "image_name": image_name}
     except Exception as e:
         return str(e)

@@ -22,10 +22,13 @@ def get_screen_size() -> dict[str, int]:
 @router.get("/screenshot")
 def take_screenshot() -> dict[str, str]:
     try:
+        # screenshot_base64 = screen_service.take_screenshot_base64()
         screenshot_base64 = screen_service.take_screenshot_base64()
+        image_name = screenshot_base64["image_name"]
+        encoded = screenshot_base64["base64"]   
     except RuntimeError as e:
         event_logger.log("screen.screenshot", "error", {"error": str(e)})
         raise HTTPException(status_code=501, detail=str(e)) from e
 
-    event_logger.log("screen.screenshot", "success", {"encoding": "base64_png"})
-    return {"encoding": "base64_png", "data": screenshot_base64}
+    # event_logger.log("screen.screenshot", "success", {"encoding": "base64_png"   })   
+    return {"encoding": "base64_png", "data": encoded, "image_name": image_name}
