@@ -45,7 +45,7 @@ pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
 pip install -r requirements.txt
 
 # pip freeze > requirements.txt
-pip list --format=freeze | grep -v "@ file://" > requirements.txt
+pip list --format=freeze | grep -v "@ file://" > requirements_latest.txt
 
 # start the app
 # uvicorn main:app --reload --host 0.0.0.0 --port 42014

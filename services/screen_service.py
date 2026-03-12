@@ -2,15 +2,19 @@ from __future__ import annotations
 
 import base64
 from dataclasses import dataclass
-from io import BytesIO
+import logging
 import os
 from datetime import datetime
+
+
+logger = logging.getLogger(__name__)
 
 
 def _pyautogui():
     try:
         import pyautogui
     except Exception as e:
+        logger.exception("pyautogui import failed")
         raise RuntimeError("pyautogui is not installed or not available on this host") from e
     return pyautogui
 
@@ -23,26 +27,33 @@ class ScreenSize:
 
 def get_screen_size() -> ScreenSize:
     pyautogui = _pyautogui()
-    size = pyautogui.size()
-    return ScreenSize(width=int(size.width), height=int(size.height))
+    try:
+        size = pyautogui.size()
+        result = ScreenSize(width=int(size.width), height=int(size.height))
+        logger.debug("screen size width=%d height=%d", result.width, result.height)
+        return result
+    except Exception as e:
+        logger.exception("failed to get screen size")
+        raise RuntimeError("failed to get screen size") from e
 
 
-def take_screenshot_base64() -> str:
+def take_screenshot_base64() -> dict[str, str]:
     try:
         images_output_absolute_dir_path = os.path.abspath("output/screenshots")
         os.makedirs(images_output_absolute_dir_path, exist_ok=True)
         pyautogui = _pyautogui()
+        logger.debug("taking screenshot output_dir=%s", images_output_absolute_dir_path)
         image = pyautogui.screenshot()
         
-        # save to file
         date_and_time = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
         image_name = f"screenshot_{date_and_time}.png"
         image_absolute_path = f"{images_output_absolute_dir_path}/{image_name}"
         image.save(image_absolute_path)
         
-        # read back from file and encode
         with open(image_absolute_path, "rb") as f:
             encoded = base64.b64encode(f.read()).decode("ascii")
+        logger.debug("screenshot saved image_name=%s bytes_base64=%d", image_name, len(encoded))
         return {"base64": encoded, "image_name": image_name}
     except Exception as e:
-        return str(e)
+        logger.exception("failed to take screenshot")
+        raise RuntimeError("failed to take screenshot") from e

@@ -1,8 +1,11 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+import logging
 from pathlib import Path
 
+
+logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
 # Paths — all resolved relative to this file so they work regardless of cwd
@@ -91,6 +94,7 @@ def _resolve_device(use_gpu: bool) -> str:
         if torch.backends.mps.is_available():
             return "mps"  # Apple Silicon — ready for M2 later
     except Exception:
+        logger.exception("failed to resolve torch device; falling back to cpu")
         pass
     return "cpu"
 
@@ -103,6 +107,7 @@ def _yolo_detect(image_path: Path, use_gpu: bool = False) -> list[BoundingBox]:
     try:
         from ultralytics import YOLO
     except ImportError as e:
+        logger.exception("ultralytics import failed")
         raise RuntimeError("ultralytics is not installed. Run: pip install ultralytics") from e
 
     if not _ICON_DETECT_WEIGHTS.exists():
@@ -123,6 +128,7 @@ def _yolo_detect(image_path: Path, use_gpu: bool = False) -> list[BoundingBox]:
             label = result.names.get(cls_id, str(cls_id))
             boxes.append(_make_box(x1, y1, x2, y2, label, score, source="yolo"))
 
+    logger.debug("yolo detected boxes=%d image=%s", len(boxes), str(image_path))
     return boxes
 
 
@@ -139,6 +145,7 @@ def _florence_caption(image_path: Path, boxes: list[BoundingBox]) -> list[Boundi
         from PIL import Image
         import torch
     except ImportError as e:
+        logger.exception("florence dependencies import failed")
         raise RuntimeError(
             "transformers, Pillow, and torch are required for Florence-2 captioning. "
             "Run: pip install transformers pillow torch"
@@ -213,6 +220,7 @@ def _cv2_ui_detect(image_path: Path) -> list[BoundingBox]:
         import cv2
         import numpy as np
     except ImportError as e:
+        logger.exception("cv2/numpy import failed")
         raise RuntimeError(
             "opencv-python is not installed. Run: pip install opencv-python-headless"
         ) from e
@@ -297,11 +305,13 @@ def _annotate_and_save(image_path: Path, boxes: list[BoundingBox]) -> Path:
     try:
         import cv2
     except ImportError:
+        logger.debug("cv2 missing; skipping annotation image=%s", str(image_path))
         return image_path
 
     ANNOTATED_DIR.mkdir(parents=True, exist_ok=True)
     img = cv2.imread(str(image_path))
     if img is None:
+        logger.debug("cv2 could not read image for annotation image=%s", str(image_path))
         return image_path
 
     color_map = {
@@ -348,7 +358,18 @@ def detect_ui_elements(
            natural-language labels. Opt-in via use_florence=True.
            WARNING: slow on CPU (~0.5-2s per box). Use async/queue for production.
     """
+    logger.debug(
+        "detect_ui_elements start image_name=%s use_yolo=%s use_cv2_heuristic=%s use_florence=%s confidence_threshold=%s annotate=%s use_gpu=%s",
+        image_name,
+        use_yolo,
+        use_cv2_heuristic,
+        use_florence,
+        confidence_threshold,
+        annotate,
+        use_gpu,
+    )
     image_path = _resolve_image_path(image_name)
+    logger.debug("resolved image_path=%s", str(image_path))
 
     all_boxes: list[BoundingBox] = []
     errors: list[str] = []
@@ -358,6 +379,7 @@ def detect_ui_elements(
         try:
             all_boxes.extend(_yolo_detect(image_path, use_gpu=use_gpu))
         except RuntimeError as e:
+            logger.exception("yolo detect failed image_path=%s", str(image_path))
             errors.append(f"yolo: {e}")
 
     # --- Pass 2: CV2 heuristic ---
@@ -365,12 +387,19 @@ def detect_ui_elements(
         try:
             all_boxes.extend(_cv2_ui_detect(image_path))
         except RuntimeError as e:
+            logger.exception("cv2 detect failed image_path=%s", str(image_path))
             errors.append(f"cv2: {e}")
 
     if not all_boxes and errors:
         raise RuntimeError("; ".join(errors))
 
     filtered = [b for b in all_boxes if b.score is None or b.score >= confidence_threshold]
+    logger.debug(
+        "filtered boxes total=%d filtered=%d errors=%d",
+        len(all_boxes),
+        len(filtered),
+        len(errors),
+    )
 
     # --- Pass 3: Florence-2 caption enrichment (YOLO boxes only) ---
     # CV2 regions already have semantic labels — no need to caption those.
@@ -381,6 +410,7 @@ def detect_ui_elements(
             enriched = _florence_caption(image_path, yolo_boxes)
             filtered = enriched + other_boxes
         except RuntimeError as e:
+            logger.exception("florence caption failed image_path=%s", str(image_path))
             errors.append(f"florence: {e}")
 
     annotated_path: str | None = None
@@ -388,12 +418,20 @@ def detect_ui_elements(
         try:
             annotated_path = str(_annotate_and_save(image_path, filtered))
         except Exception:
+            logger.exception("annotation failed image_path=%s", str(image_path))
             pass
 
-    return {
+    result = {
         "image_path": str(image_path),
         "annotated_path": annotated_path,
         "count": len(filtered),
         "boxes": [b.to_dict() for b in filtered],
         "errors": errors,
     }
+    logger.debug(
+        "detect_ui_elements ok count=%d annotated_path=%s errors=%d",
+        result["count"],
+        result.get("annotated_path"),
+        len(result.get("errors", [])),
+    )
+    return result

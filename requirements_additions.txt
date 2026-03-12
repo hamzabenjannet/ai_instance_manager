@@ -1,0 +1,7 @@
+# ── MCP + SSH additions (append to existing requirements.txt) ─────────────
+# MCP Python SDK
+mcp>=1.0.0
+# SSH / SFTP client
+paramiko>=3.4.0
+# Needed by SSE transport (already a FastAPI dep but pin explicitly)
+sse-starlette>=1.8.2

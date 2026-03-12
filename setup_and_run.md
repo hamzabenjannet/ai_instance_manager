@@ -13,7 +13,7 @@ pip install ultralytics
 pip install opencv-python-headless
 pip install transformers timm einops easyocr
 pip install "transformers==4.38.2"
- 
+
 # CUDA only
 pip install torch torchvision --index-url https://download.pytorch.org/whl/cu124
 # CUDA only
@@ -54,4 +54,15 @@ pip list --format=freeze | grep -v "@ file://" > requirements.txt
 uvicorn main:app --reload --host 0.0.0.0 --port 42014
 # OR
 bash ./run.sh
+```
+
+# Setup SSH key for the MCP server
+
+This should be run once if the root user does not have an SSH key.
+
+```bash
+# Inside the VNC container — run once
+ssh-keygen -t rsa -b 4096 -f /root/.ssh/id_rsa -N ""
+cat /root/.ssh/id_rsa.pub >> /root/.ssh/authorized_keys
+chmod 600 /root/.ssh/authorized_keys
 ```

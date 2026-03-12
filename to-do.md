@@ -20,17 +20,19 @@
 - Implemented `/vision/detect` endpoint using screenshot file input (`image_name`).
 - Added model/weights download scripts (`download_models_and_weights.py/.sh`).
 - Added GPU toggle for YOLO inference (`use_gpu` flag).
+- Added debug logging + strict error propagation for mouse/screen/keyboard routes and services.
+- Aligned `/keyboard/press` to use `interval_seconds`.
+- Added debug logging + strict error propagation for vision routes and services.
+- Added simple debug logs across health/config/database/event logging.
 
 ## Next
 
 1. Stabilize dependency installation (revisit `requirements.txt` pins and portability).
 2. Split requirements into base vs vision extras (avoid huge default install).
-3. Fix error handling for mouse/screen services (no `print`, no `return str(e)`).
-4. Align keyboard press behavior with models (`interval_seconds` usage).
-5. Implement MongoDB event logging (replace in-memory logger with Mongo-backed logger).
-6. Add health checks for external deps (Mongo, RabbitMQ, Ollama, vision weights).
-7. Add `/vision/detect` smoke test flow (document + minimal test case).
-8. Remove token placeholder from `download_models_and_weights.sh` and document `HF_TOKEN` usage.
+3. Implement MongoDB event logging (replace in-memory logger with Mongo-backed logger).
+4. Add health checks for external deps (Mongo, RabbitMQ, Ollama, vision weights).
+5. Add `/vision/detect` smoke test flow (document + minimal test case).
+6. Remove token placeholder from `download_models_and_weights.sh` and document `HF_TOKEN` usage.
 
 ## Last Validation (vns-server container)
 
@@ -58,10 +60,8 @@
 
 ## Issues / Notes
 
-- `screen_service.take_screenshot_base64()` returns `str(e)` on failure; API will treat it as base64 data.
-- `mouse_service.click()` prints errors instead of raising/logging; failures can look like success.
+- If `logger.debug(...)` from routes/services does not show, set `APP_LOG_LEVEL=DEBUG` (or `LOG_LEVEL=DEBUG`) before starting uvicorn.
 - `requirements.txt` pins `pip/setuptools/wheel`; may be unnecessary and can cause conflicts.
-- `PressKeyRequest.interval_seconds` exists but is not used by `/keyboard/press`.
 - `requirements.txt` includes both `opencv-python` and `opencv-python-headless`; pick one for the container.
 - `download_models_and_weights.sh` contains an `HF_TOKEN` placeholder; do not commit real tokens.
 
@@ -88,6 +88,20 @@ curl -sS http://localhost:42014/health
 curl -sS http://localhost:42014/mouse/position
 curl -sS http://localhost:42014/screen/size
 curl -sS http://localhost:42014/screen/screenshot | head -c 200 && echo
+```
+
+### Keyboard smoke test (manual)
+
+```bash
+curl -sS http://localhost:42014/keyboard/type \
+  -H 'Content-Type: application/json' \
+  -d '{"text":"hello","interval_seconds":0.05}'
+```
+
+```bash
+curl -sS http://localhost:42014/keyboard/press \
+  -H 'Content-Type: application/json' \
+  -d '{"key":"enter","interval_seconds":0.05}'
 ```
 
 ### Screenshot response size (avoid pipe errors)

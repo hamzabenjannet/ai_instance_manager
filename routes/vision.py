@@ -1,3 +1,4 @@
+import logging
 from typing import Any
 
 from fastapi import APIRouter, HTTPException
@@ -6,6 +7,8 @@ from pydantic import BaseModel, Field
 from app.logging_service import event_logger
 from services import vision_service
 
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/vision", tags=["vision"])
 
@@ -65,6 +68,16 @@ def detect_elements(request: VisionDetectRequest) -> dict[str, Any]:
     - Annotated image saved to output/annotated/ when annotate=true.
     """
     try:
+        logger.debug(
+            "vision.detect start image_name=%s use_yolo=%s use_cv2_heuristic=%s use_florence=%s confidence_threshold=%s annotate=%s use_gpu=%s",
+            request.image_name,
+            request.use_yolo,
+            request.use_cv2_heuristic,
+            request.use_florence,
+            request.confidence_threshold,
+            request.annotate,
+            request.use_gpu,
+        )
         result = vision_service.detect_ui_elements(
             image_name=request.image_name,
             use_yolo=request.use_yolo,
@@ -75,11 +88,17 @@ def detect_elements(request: VisionDetectRequest) -> dict[str, Any]:
             use_gpu=request.use_gpu,
         )
     except FileNotFoundError as e:
+        logger.exception("vision.detect file not found image_name=%s", request.image_name)
         event_logger.log("vision.detect", "error", {"error": str(e), "image_name": request.image_name})
         raise HTTPException(status_code=404, detail=str(e)) from e
     except RuntimeError as e:
+        logger.exception("vision.detect runtime error image_name=%s", request.image_name)
         event_logger.log("vision.detect", "error", {"error": str(e), "image_name": request.image_name})
         raise HTTPException(status_code=501, detail=str(e)) from e
+    except Exception as e:
+        logger.exception("vision.detect unexpected error image_name=%s", request.image_name)
+        event_logger.log("vision.detect", "error", {"error": str(e), "image_name": request.image_name})
+        raise HTTPException(status_code=500, detail="unexpected error") from e
 
     event_logger.log(
         "vision.detect",
@@ -94,5 +113,12 @@ def detect_elements(request: VisionDetectRequest) -> dict[str, Any]:
             "annotated_path": result.get("annotated_path"),
             "errors": result.get("errors", []),
         },
+    )
+    logger.debug(
+        "vision.detect ok image_name=%s count=%s annotated_path=%s errors_count=%d",
+        request.image_name,
+        result.get("count"),
+        result.get("annotated_path"),
+        len(result.get("errors", [])),
     )
     return result
