@@ -25,4 +25,5 @@ def health() -> dict[str, object]:
         "event_log_size": event_logger.size(),
         "ssh": ssh_status,
         "mcp_sse_endpoint": "/mcp/sse",
+        "mcp_messages_endpoint": "/mcp/messages",
     }
