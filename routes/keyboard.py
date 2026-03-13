@@ -24,7 +24,6 @@ def type_text(request: TypeTextRequest) -> dict[str, str]:
         logger.exception("keyboard.type unexpected error")  
         raise HTTPException(status_code=500, detail="unexpected error") from e
 
-        logger.debug("keyboard.type", "success", {"length": len(request.text)})
     logger.debug("keyboard.type ok length=%d", len(request.text))
     return {"status": "ok"}
 
