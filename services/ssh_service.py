@@ -15,8 +15,15 @@ from pathlib import Path
 from typing import Any
 
 import paramiko
+import logging
 
-from app.logging_service import event_logger
+
+
+logger = logging.getLogger(__name__)
+
+
+
+# from app.logging_service import event_logger
 from app.config import get_settings
 
 
@@ -107,14 +114,14 @@ def run_command(command: str, timeout: int = 60) -> CommandResult:
                 exit_code=code,
                 success=code == 0,
             )
-            event_logger.log(event_type, "success" if result.success else "error", {
+            logger.debug(event_type, "success" if result.success else "error", {
                 "command": command,
                 "exit_code": code,
                 "stderr_snippet": err[:200],
             })
             return result
     except Exception as exc:
-        event_logger.log(event_type, "error", {"command": command, "error": str(exc)})
+        logger.debug(event_type, "error", {"command": command, "error": str(exc)})
         raise RuntimeError(f"SSH command failed: {exc}") from exc
 
 
@@ -200,11 +207,11 @@ def upload_file(local_content: bytes, remote_path: str) -> dict[str, Any]:
             "size_bytes": len(local_content),
             "success": True,
         }
-        event_logger.log(event_type, "success", result)
+        logger.debug(event_type, "success", result)
         return result
     except Exception as exc:
         payload = {"remote_path": remote_path, "error": str(exc), "success": False}
-        event_logger.log(event_type, "error", payload)
+        logger.debug(event_type, "error", payload)
         raise RuntimeError(f"SFTP upload failed: {exc}") from exc
 
 
@@ -230,14 +237,14 @@ def download_file(remote_path: str) -> dict[str, Any]:
             "data": base64.b64encode(raw).decode("ascii"),
             "success": True,
         }
-        event_logger.log(event_type, "success", {
+        logger.debug(event_type, "success", {
             "remote_path": remote_path,
             "size_bytes": len(raw),
         })
         return result
     except Exception as exc:
         payload = {"remote_path": remote_path, "error": str(exc), "success": False}
-        event_logger.log(event_type, "error", payload)
+        logger.debug(event_type, "error", payload)
         raise RuntimeError(f"SFTP download failed: {exc}") from exc
 
 
@@ -260,8 +267,8 @@ def check_ssh_connection() -> dict[str, Any]:
             _, stdout, _ = client.exec_command("echo ok", timeout=5)
             out = stdout.read().decode().strip()
             ok = out == "ok"
-        event_logger.log("ssh.health", "success", {"host": cfg.host, "port": cfg.port})
+        logger.debug("ssh.health", "success", {"host": cfg.host, "port": cfg.port})
         return {"ssh_connected": ok, "host": cfg.host, "port": cfg.port}
     except Exception as exc:
-        event_logger.log("ssh.health", "error", {"host": cfg.host, "error": str(exc)})
+        logger.debug("ssh.health", "error", {"host": cfg.host, "error": str(exc)})
         return {"ssh_connected": False, "host": cfg.host, "port": cfg.port, "error": str(exc)}

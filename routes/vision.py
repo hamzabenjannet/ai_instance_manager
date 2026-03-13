@@ -4,7 +4,7 @@ from typing import Any
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
 
-from app.logging_service import event_logger
+# from app.logging_service import event_logger
 from services import vision_service
 
 
@@ -89,18 +89,18 @@ def detect_elements(request: VisionDetectRequest) -> dict[str, Any]:
         )
     except FileNotFoundError as e:
         logger.exception("vision.detect file not found image_name=%s", request.image_name)
-        event_logger.log("vision.detect", "error", {"error": str(e), "image_name": request.image_name})
+        logger.debug("vision.detect", "error", {"error": str(e), "image_name": request.image_name})
         raise HTTPException(status_code=404, detail=str(e)) from e
     except RuntimeError as e:
         logger.exception("vision.detect runtime error image_name=%s", request.image_name)
-        event_logger.log("vision.detect", "error", {"error": str(e), "image_name": request.image_name})
+        logger.debug("vision.detect", "error", {"error": str(e), "image_name": request.image_name})
         raise HTTPException(status_code=501, detail=str(e)) from e
     except Exception as e:
         logger.exception("vision.detect unexpected error image_name=%s", request.image_name)
-        event_logger.log("vision.detect", "error", {"error": str(e), "image_name": request.image_name})
+        logger.debug("vision.detect", "error", {"error": str(e), "image_name": request.image_name})
         raise HTTPException(status_code=500, detail="unexpected error") from e
 
-    event_logger.log(
+    logger.debug(
         "vision.detect",
         "success",
         {

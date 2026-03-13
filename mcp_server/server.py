@@ -19,7 +19,7 @@ from mcp.types import (
 from starlette.applications import Starlette
 from starlette.routing import Mount
 
-from app.logging_service import event_logger
+# from app.logging_service import event_logger
 from services import (
     keyboard_service,
     mouse_service,
@@ -178,87 +178,87 @@ async def list_tools() -> list[Tool]:
                 "required": ["command"],
             },
         ),
-        Tool(
-            name="ssh_uvicorn_start",
-            description="Start the FastAPI/uvicorn process inside the VNC container.",
-            inputSchema={
-                "type": "object",
-                "properties": {
-                    "app_module": {"type": "string", "default": "main:app"},
-                    "host": {"type": "string", "default": "0.0.0.0"},
-                    "port": {"type": "integer", "default": 42014},
-                    "conda_env": {"type": "string", "default": "ai_instance_manager"},
-                    "project_dir": {"type": "string", "default": "/config/workspace/projects/apps/ai_instance_manager"},
-                    "log_file": {"type": "string", "default": "/tmp/uvicorn.log"},
-                },
-                "required": [],
-            },
-        ),
-        Tool(
-            name="ssh_uvicorn_stop",
-            description="Stop the uvicorn process on the given port.",
-            inputSchema={
-                "type": "object",
-                "properties": {"port": {"type": "integer", "default": 42014}},
-                "required": [],
-            },
-        ),
-        Tool(
-            name="ssh_uvicorn_status",
-            description="Check whether uvicorn is running on the given port.",
-            inputSchema={
-                "type": "object",
-                "properties": {"port": {"type": "integer", "default": 42014}},
-                "required": [],
-            },
-        ),
-        Tool(
-            name="ssh_read_logs",
-            description="Tail a log file from the VNC container.",
-            inputSchema={
-                "type": "object",
-                "properties": {
-                    "log_file": {"type": "string", "default": "/tmp/uvicorn.log"},
-                    "tail_lines": {"type": "integer", "minimum": 1, "maximum": 5000, "default": 100},
-                },
-                "required": [],
-            },
-        ),
-        Tool(
-            name="ssh_upload_file",
-            description="Upload a file to the VNC container via SFTP (base64-encoded content).",
-            inputSchema={
-                "type": "object",
-                "properties": {
-                    "remote_path": {"type": "string"},
-                    "content_base64": {"type": "string"},
-                },
-                "required": ["remote_path", "content_base64"],
-            },
-        ),
-        Tool(
-            name="ssh_download_file",
-            description="Download a file from the VNC container via SFTP (returns base64).",
-            inputSchema={
-                "type": "object",
-                "properties": {"remote_path": {"type": "string"}},
-                "required": ["remote_path"],
-            },
-        ),
-        Tool(
-            name="ssh_list_directory",
-            description="List directory contents on the VNC container (ls -lah).",
-            inputSchema={
-                "type": "object",
-                "properties": {"path": {"type": "string", "default": "/config/workspace"}},
-                "required": [],
-            },
-        ),
-        Tool(
-            name="ssh_system_info",
-            description="Return uptime, memory, disk usage, and top processes from the container.",
-            inputSchema={"type": "object", "properties": {}, "required": []},
-        ),
+        # Tool(
+        #     name="ssh_uvicorn_start",
+        #     description="Start the FastAPI/uvicorn process inside the VNC container.",
+        #     inputSchema={
+        #         "type": "object",
+        #         "properties": {
+        #             "app_module": {"type": "string", "default": "main:app"},
+        #             "host": {"type": "string", "default": "0.0.0.0"},
+        #             "port": {"type": "integer", "default": 42014},
+        #             "conda_env": {"type": "string", "default": "ai_instance_manager"},
+        #             "project_dir": {"type": "string", "default": "/config/workspace/projects/apps/ai_instance_manager"},
+        #             "log_file": {"type": "string", "default": "/tmp/uvicorn.log"},
+        #         },
+        #         "required": [],
+        #     },
+        # ),
+        # Tool(
+        #     name="ssh_uvicorn_stop",
+        #     description="Stop the uvicorn process on the given port.",
+        #     inputSchema={
+        #         "type": "object",
+        #         "properties": {"port": {"type": "integer", "default": 42014}},
+        #         "required": [],
+        #     },
+        # ),
+        # Tool(
+        #     name="ssh_uvicorn_status",
+        #     description="Check whether uvicorn is running on the given port.",
+        #     inputSchema={
+        #         "type": "object",
+        #         "properties": {"port": {"type": "integer", "default": 42014}},
+        #         "required": [],
+        #     },
+        # ),
+        # Tool(
+        #     name="ssh_read_logs",
+        #     description="Tail a log file from the VNC container.",
+        #     inputSchema={
+        #         "type": "object",
+        #         "properties": {
+        #             "log_file": {"type": "string", "default": "/tmp/uvicorn.log"},
+        #             "tail_lines": {"type": "integer", "minimum": 1, "maximum": 5000, "default": 100},
+        #         },
+        #         "required": [],
+        #     },
+        # ),
+        # Tool(
+        #     name="ssh_upload_file",
+        #     description="Upload a file to the VNC container via SFTP (base64-encoded content).",
+        #     inputSchema={
+        #         "type": "object",
+        #         "properties": {
+        #             "remote_path": {"type": "string"},
+        #             "content_base64": {"type": "string"},
+        #         },
+        #         "required": ["remote_path", "content_base64"],
+        #     },
+        # ),
+        # Tool(
+        #     name="ssh_download_file",
+        #     description="Download a file from the VNC container via SFTP (returns base64).",
+        #     inputSchema={
+        #         "type": "object",
+        #         "properties": {"remote_path": {"type": "string"}},
+        #         "required": ["remote_path"],
+        #     },
+        # ),
+        # Tool(
+        #     name="ssh_list_directory",
+        #     description="List directory contents on the VNC container (ls -lah).",
+        #     inputSchema={
+        #         "type": "object",
+        #         "properties": {"path": {"type": "string", "default": "/config/workspace"}},
+        #         "required": [],
+        #     },
+        # ),
+        # Tool(
+        #     name="ssh_system_info",
+        #     description="Return uptime, memory, disk usage, and top processes from the container.",
+        #     inputSchema={"type": "object", "properties": {}, "required": []},
+        # ),
     ]
 
 
@@ -278,7 +278,7 @@ def _err(message: str) -> CallToolResult:
 
 @mcp_server.call_tool()
 async def call_tool(name: str, arguments: dict[str, Any]) -> CallToolResult:
-    event_logger.log("mcp.tool_call", "received", {"tool": name, "args": arguments})
+    logger.debug("mcp.tool_call", "received", {"tool": name, "args": arguments})
     logger.debug("mcp.call_tool received name=%s args=%s", name, _safe_args_summary(arguments))
     try:
         if name == "mouse_get_position":
@@ -351,61 +351,61 @@ async def call_tool(name: str, arguments: dict[str, Any]) -> CallToolResult:
             result = ssh_service.run_command(command, timeout=timeout)
             logger.debug("mcp.call_tool executed ssh_run_command")
             return _ok(result.to_dict())
-        if name == "ssh_uvicorn_start":
-            logger.debug(
-                "mcp.call_tool executing ssh_uvicorn_start app_module=%s host=%s port=%s conda_env=%s project_dir=%s log_file=%s",
-                arguments.get("app_module", "main:app"),
-                arguments.get("host", "0.0.0.0"),
-                arguments.get("port", 42014),
-                arguments.get("conda_env", "ai_instance_manager"),
-                arguments.get("project_dir", "/config/workspace/projects/apps/ai_instance_manager"),
-                arguments.get("log_file", "/tmp/uvicorn.log"),
-            )
-            result = ssh_service.start_uvicorn(
-                app_module=arguments.get("app_module", "main:app"),
-                host=arguments.get("host", "0.0.0.0"),
-                port=int(arguments.get("port", 42014)),
-                conda_env=arguments.get("conda_env", "ai_instance_manager"),
-                project_dir=arguments.get("project_dir", "/config/workspace/projects/apps/ai_instance_manager"),
-                log_file=arguments.get("log_file", "/tmp/uvicorn.log"),
-            )
-            logger.debug("mcp.call_tool executed ssh_uvicorn_start")
-            return _ok(result.to_dict())
-        if name == "ssh_uvicorn_stop":
-            logger.debug("mcp.call_tool executing ssh_uvicorn_stop port=%s", arguments.get("port", 42014))
-            result = ssh_service.stop_uvicorn(port=int(arguments.get("port", 42014)))
-            logger.debug("mcp.call_tool executed ssh_uvicorn_stop")
-            return _ok(result.to_dict())
-        if name == "ssh_uvicorn_status":
-            logger.debug("mcp.call_tool executing ssh_uvicorn_status port=%s", arguments.get("port", 42014))
-            result = ssh_service.uvicorn_status(port=int(arguments.get("port", 42014)))
-            logger.debug("mcp.call_tool executed ssh_uvicorn_status")
-            return _ok(result.to_dict())
-        if name == "ssh_read_logs":
-            log_file = arguments.get("log_file", "/tmp/uvicorn.log")
-            tail_lines = int(arguments.get("tail_lines", 100))
-            logger.debug("mcp.call_tool executing ssh_read_logs log_file=%s tail_lines=%s", log_file, tail_lines)
-            result = ssh_service.read_logs(log_file=log_file, tail_lines=tail_lines)
-            logger.debug("mcp.call_tool executed ssh_read_logs")
-            return _ok(result.to_dict())
-        if name == "ssh_upload_file":
-            logger.debug("mcp.call_tool executing ssh_upload_file remote_path=%s content_base64_length=%s", arguments.get("remote_path"), len(arguments.get("content_base64") or ""))
-            raw = base64.b64decode(arguments["content_base64"])
-            result = ssh_service.upload_file(raw, arguments["remote_path"])
-            logger.debug("mcp.call_tool executed ssh_upload_file bytes=%s", len(raw))
-            return _ok(result)
-        if name == "ssh_download_file":
-            logger.debug("mcp.call_tool executing ssh_download_file remote_path=%s", arguments.get("remote_path"))
-            result = ssh_service.download_file(arguments["remote_path"])
-            logger.debug("mcp.call_tool executed ssh_download_file")
-            return _ok(result)
-        if name == "ssh_list_directory":
-            path = arguments.get("path", "/config/workspace")
-            logger.debug("mcp.call_tool executing ssh_list_directory path=%s", path)
-            result = ssh_service.list_directory(path)
-            logger.debug("mcp.call_tool executed ssh_list_directory")
-            return _ok(result.to_dict())
-        if name == "ssh_system_info":
+        # if name == "ssh_uvicorn_start":
+        #     logger.debug(
+        #         "mcp.call_tool executing ssh_uvicorn_start app_module=%s host=%s port=%s conda_env=%s project_dir=%s log_file=%s",
+        #         arguments.get("app_module", "main:app"),
+        #         arguments.get("host", "0.0.0.0"),
+        #         arguments.get("port", 42014),
+        #         arguments.get("conda_env", "ai_instance_manager"),
+        #         arguments.get("project_dir", "/config/workspace/projects/apps/ai_instance_manager"),
+        #         arguments.get("log_file", "/tmp/uvicorn.log"),
+        #     )
+        #     result = ssh_service.start_uvicorn(
+        #         app_module=arguments.get("app_module", "main:app"),
+        #         host=arguments.get("host", "0.0.0.0"),
+        #         port=int(arguments.get("port", 42014)),
+        #         conda_env=arguments.get("conda_env", "ai_instance_manager"),
+        #         project_dir=arguments.get("project_dir", "/config/workspace/projects/apps/ai_instance_manager"),
+        #         log_file=arguments.get("log_file", "/tmp/uvicorn.log"),
+        #     )
+        #     logger.debug("mcp.call_tool executed ssh_uvicorn_start")
+        #     return _ok(result.to_dict())
+        # if name == "ssh_uvicorn_stop":
+        #     logger.debug("mcp.call_tool executing ssh_uvicorn_stop port=%s", arguments.get("port", 42014))
+        #     result = ssh_service.stop_uvicorn(port=int(arguments.get("port", 42014)))
+        #     logger.debug("mcp.call_tool executed ssh_uvicorn_stop")
+        #     return _ok(result.to_dict())
+        # if name == "ssh_uvicorn_status":
+        #     logger.debug("mcp.call_tool executing ssh_uvicorn_status port=%s", arguments.get("port", 42014))
+        #     result = ssh_service.uvicorn_status(port=int(arguments.get("port", 42014)))
+        #     logger.debug("mcp.call_tool executed ssh_uvicorn_status")
+        #     return _ok(result.to_dict())
+        # if name == "ssh_read_logs":
+        #     log_file = arguments.get("log_file", "/tmp/uvicorn.log")
+        #     tail_lines = int(arguments.get("tail_lines", 100))
+        #     logger.debug("mcp.call_tool executing ssh_read_logs log_file=%s tail_lines=%s", log_file, tail_lines)
+        #     result = ssh_service.read_logs(log_file=log_file, tail_lines=tail_lines)
+        #     logger.debug("mcp.call_tool executed ssh_read_logs")
+        #     return _ok(result.to_dict())
+        # if name == "ssh_upload_file":
+        #     logger.debug("mcp.call_tool executing ssh_upload_file remote_path=%s content_base64_length=%s", arguments.get("remote_path"), len(arguments.get("content_base64") or ""))
+        #     raw = base64.b64decode(arguments["content_base64"])
+        #     result = ssh_service.upload_file(raw, arguments["remote_path"])
+        #     logger.debug("mcp.call_tool executed ssh_upload_file bytes=%s", len(raw))
+        #     return _ok(result)
+        # if name == "ssh_download_file":
+        #     logger.debug("mcp.call_tool executing ssh_download_file remote_path=%s", arguments.get("remote_path"))
+        #     result = ssh_service.download_file(arguments["remote_path"])
+        #     logger.debug("mcp.call_tool executed ssh_download_file")
+        #     return _ok(result)
+        # if name == "ssh_list_directory":
+        #     path = arguments.get("path", "/config/workspace")
+        #     logger.debug("mcp.call_tool executing ssh_list_directory path=%s", path)
+        #     result = ssh_service.list_directory(path)
+        #     logger.debug("mcp.call_tool executed ssh_list_directory")
+        #     return _ok(result.to_dict())
+        # if name == "ssh_system_info":
             logger.debug("mcp.call_tool executing ssh_system_info")
             result = ssh_service.get_system_info()
             logger.debug("mcp.call_tool executed ssh_system_info")
@@ -413,15 +413,15 @@ async def call_tool(name: str, arguments: dict[str, Any]) -> CallToolResult:
         logger.debug("mcp.call_tool unknown tool name=%s", name)
         return _err(f"Unknown tool: {name}")
     except FileNotFoundError as exc:
-        event_logger.log("mcp.tool_call", "error", {"tool": name, "error": str(exc)})
+        logger.debug("mcp.tool_call", "error", {"tool": name, "error": str(exc)})
         logger.debug("mcp.call_tool FileNotFoundError name=%s error=%s", name, str(exc))
         return _err(str(exc))
     except RuntimeError as exc:
-        event_logger.log("mcp.tool_call", "error", {"tool": name, "error": str(exc)})
+        logger.debug("mcp.tool_call", "error", {"tool": name, "error": str(exc)})
         logger.debug("mcp.call_tool RuntimeError name=%s error=%s", name, str(exc))
         return _err(str(exc))
     except Exception as exc:
-        event_logger.log("mcp.tool_call", "error", {"tool": name, "error": repr(exc)})
+        logger.debug("mcp.tool_call", "error", {"tool": name, "error": repr(exc)})
         logger.debug("mcp.call_tool Exception name=%s error=%s", name, repr(exc))
         return _err(f"Unexpected error: {exc}")
 

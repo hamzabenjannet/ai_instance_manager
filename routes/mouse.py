@@ -2,7 +2,7 @@ import logging
 
 from fastapi import APIRouter, HTTPException
 
-from app.logging_service import event_logger
+# from app.logging_service import event_logger
 from models.mouse_models import MouseClickRequest, MousePositionResponse, MoveMouseRequest
 from services import mouse_service
 
@@ -20,10 +20,10 @@ def get_mouse_position() -> MousePositionResponse:
         logger.debug("mouse.position ok x=%d y=%d", x, y)
     except RuntimeError as e:
         logger.exception("mouse.position error")
-        event_logger.log("mouse.position", "error", {"error": str(e)})
+        logger.debug("mouse.position", "error", {"error": str(e)})
         raise HTTPException(status_code=501, detail=str(e)) from e
 
-    event_logger.log("mouse.position", "success", {"x": x, "y": y})
+    logger.debug("mouse.position", "success", {"x": x, "y": y})
     return MousePositionResponse(x=x, y=y)
 
 
@@ -34,10 +34,10 @@ def move_mouse(request: MoveMouseRequest) -> dict[str, str]:
         mouse_service.move_to(request.x, request.y)
     except RuntimeError as e:
         logger.exception("mouse.move error x=%d y=%d", request.x, request.y)
-        event_logger.log("mouse.move", "error", {"error": str(e), "x": request.x, "y": request.y})
+        logger.debug("mouse.move", "error", {"error": str(e), "x": request.x, "y": request.y})
         raise HTTPException(status_code=501, detail=str(e)) from e
 
-    event_logger.log("mouse.move", "success", {"x": request.x, "y": request.y})
+    logger.debug("mouse.move", "success", {"x": request.x, "y": request.y})
     logger.debug("mouse.move ok x=%d y=%d", request.x, request.y)
     return {"status": "ok"}
 
@@ -49,9 +49,9 @@ def click_mouse(request: MouseClickRequest) -> dict[str, str]:
         mouse_service.click(button=request.button)
     except RuntimeError as e:
         logger.exception("mouse.click error button=%s", request.button)
-        event_logger.log("mouse.click", "error", {"error": str(e), "button": request.button})
+        logger.debug("mouse.click", "error", {"error": str(e), "button": request.button})
         raise HTTPException(status_code=501, detail=str(e)) from e
 
-    event_logger.log("mouse.click", "success", {"button": request.button})
+    logger.debug("mouse.click", "success", {"button": request.button})
     logger.debug("mouse.click ok button=%s", request.button)
     return {"status": "ok"}

@@ -12,8 +12,13 @@ from typing import Any
 from fastapi import APIRouter, HTTPException, UploadFile, File
 from pydantic import BaseModel, Field
 
-from app.logging_service import event_logger
+# from app.logging_service import event_logger
 from services import ssh_service
+import logging
+
+
+logger = logging.getLogger(__name__)
+
 
 
 router = APIRouter(prefix="/ssh", tags=["ssh"])
@@ -76,7 +81,10 @@ def _raise_on_error(result: ssh_service.CommandResult) -> None:
 @router.get("/health")
 def ssh_health() -> dict[str, Any]:
     """Ping the SSH connection — safe health-check probe."""
-    return ssh_service.check_ssh_connection()
+    logger.debug("ssh.health checking connection")
+    ssh_service.check_ssh_connection = ssh_service.check_ssh_connection()
+    logger.debug("ssh.health ok %s", ssh_service.check_ssh_connection)
+    return ssh_service.check_ssh_connection
 
 
 @router.post("/run")
@@ -86,123 +94,127 @@ def run_command(request: RunCommandRequest) -> dict[str, Any]:
     Returns stdout, stderr, exit_code. Always logs result.
     """
     try:
+        logger.debug("ssh.run", "debug", {"command": request.command})
         result = ssh_service.run_command(request.command, timeout=request.timeout)
+        _raise_on_error(result)
+        # logger.debug("ssh.run", "debug", result.to_dict())
+        logger.debug("ssh.run", "debug", {"exit_code": result.exit_code, "stdout": result.stdout[:100], "stderr": result.stderr[:100]})
+        return result.to_dict()
     except RuntimeError as exc:
-        event_logger.log("ssh.run", "error", {"error": str(exc), "command": request.command})
-        raise HTTPException(status_code=500, detail=str(exc)) from exc
-    return result.to_dict()
-
-
-@router.post("/uvicorn/start")
-def start_uvicorn(request: UvicornStartRequest) -> dict[str, Any]:
-    """Start the FastAPI/uvicorn process inside the VNC container."""
-    try:
-        result = ssh_service.start_uvicorn(
-            app_module=request.app_module,
-            host=request.host,
-            port=request.port,
-            conda_env=request.conda_env,
-            project_dir=request.project_dir,
-            log_file=request.log_file,
-        )
-    except RuntimeError as exc:
-        raise HTTPException(status_code=500, detail=str(exc)) from exc
-    return result.to_dict()
-
-
-@router.post("/uvicorn/stop")
-def stop_uvicorn(request: UvicornStopRequest) -> dict[str, Any]:
-    """Kill uvicorn process(es) on the given port."""
-    try:
-        result = ssh_service.stop_uvicorn(port=request.port)
-    except RuntimeError as exc:
-        raise HTTPException(status_code=500, detail=str(exc)) from exc
-    return result.to_dict()
-
-
-@router.get("/uvicorn/status")
-def uvicorn_status(port: int = 42014) -> dict[str, Any]:
-    """Check whether uvicorn is running on the given port."""
-    try:
-        result = ssh_service.uvicorn_status(port=port)
-    except RuntimeError as exc:
-        raise HTTPException(status_code=500, detail=str(exc)) from exc
-    return result.to_dict()
-
-
-@router.post("/logs")
-def read_logs(request: ReadLogsRequest) -> dict[str, Any]:
-    """Tail a log file from the container."""
-    try:
-        result = ssh_service.read_logs(
-            log_file=request.log_file,
-            tail_lines=request.tail_lines,
-        )
-    except RuntimeError as exc:
-        raise HTTPException(status_code=500, detail=str(exc)) from exc
-    return result.to_dict()
-
-
-@router.post("/files/upload")
-def upload_file(request: UploadFileRequest) -> dict[str, Any]:
-    """
-    Upload a file to the VNC container via SFTP.
-    Send file content as base64 in the JSON body.
-    """
-    try:
-        raw = base64.b64decode(request.content_base64)
-    except Exception as exc:
-        raise HTTPException(status_code=422, detail=f"Invalid base64: {exc}") from exc
-
-    try:
-        return ssh_service.upload_file(raw, request.remote_path)
-    except RuntimeError as exc:
+        logger.error("ssh.run", "error", {"error": str(exc), "command": request.command})
         raise HTTPException(status_code=500, detail=str(exc)) from exc
 
 
-@router.post("/files/upload-multipart")
-async def upload_file_multipart(
-    remote_path: str,
-    file: UploadFile = File(...),
-) -> dict[str, Any]:
-    """
-    Upload a file to the VNC container via SFTP using multipart form upload.
-    More convenient than base64 for large files.
-    """
-    try:
-        content = await file.read()
-        return ssh_service.upload_file(content, remote_path)
-    except RuntimeError as exc:
-        raise HTTPException(status_code=500, detail=str(exc)) from exc
+# @router.post("/uvicorn/start")
+# def start_uvicorn(request: UvicornStartRequest) -> dict[str, Any]:
+#     """Start the FastAPI/uvicorn process inside the VNC container."""
+#     try:
+#         result = ssh_service.start_uvicorn(
+#             app_module=request.app_module,
+#             host=request.host,
+#             port=request.port,
+#             conda_env=request.conda_env,
+#             project_dir=request.project_dir,
+#             log_file=request.log_file,
+#         )
+#     except RuntimeError as exc:
+#         raise HTTPException(status_code=500, detail=str(exc)) from exc
+#     return result.to_dict()
 
 
-@router.post("/files/download")
-def download_file(request: DownloadFileRequest) -> dict[str, Any]:
-    """
-    Download a file from the VNC container via SFTP.
-    Returns base64-encoded content.
-    """
-    try:
-        return ssh_service.download_file(request.remote_path)
-    except RuntimeError as exc:
-        raise HTTPException(status_code=500, detail=str(exc)) from exc
+# @router.post("/uvicorn/stop")
+# def stop_uvicorn(request: UvicornStopRequest) -> dict[str, Any]:
+#     """Kill uvicorn process(es) on the given port."""
+#     try:
+#         result = ssh_service.stop_uvicorn(port=request.port)
+#     except RuntimeError as exc:
+#         raise HTTPException(status_code=500, detail=str(exc)) from exc
+#     return result.to_dict()
 
 
-@router.post("/ls")
-def list_directory(request: ListDirectoryRequest) -> dict[str, Any]:
-    """List directory contents on the VNC container."""
-    try:
-        result = ssh_service.list_directory(request.path)
-    except RuntimeError as exc:
-        raise HTTPException(status_code=500, detail=str(exc)) from exc
-    return result.to_dict()
+# @router.get("/uvicorn/status")
+# def uvicorn_status(port: int = 42014) -> dict[str, Any]:
+#     """Check whether uvicorn is running on the given port."""
+#     try:
+#         result = ssh_service.uvicorn_status(port=port)
+#     except RuntimeError as exc:
+#         raise HTTPException(status_code=500, detail=str(exc)) from exc
+#     return result.to_dict()
 
 
-@router.get("/system")
-def system_info() -> dict[str, Any]:
-    """Return container system snapshot: uptime, memory, disk, top processes."""
-    try:
-        result = ssh_service.get_system_info()
-    except RuntimeError as exc:
-        raise HTTPException(status_code=500, detail=str(exc)) from exc
-    return result.to_dict()
+# @router.post("/logs")
+# def read_logs(request: ReadLogsRequest) -> dict[str, Any]:
+#     """Tail a log file from the container."""
+#     try:
+#         result = ssh_service.read_logs(
+#             log_file=request.log_file,
+#             tail_lines=request.tail_lines,
+#         )
+#     except RuntimeError as exc:
+#         raise HTTPException(status_code=500, detail=str(exc)) from exc
+#     return result.to_dict()
+
+
+# @router.post("/files/upload")
+# def upload_file(request: UploadFileRequest) -> dict[str, Any]:
+#     """
+#     Upload a file to the VNC container via SFTP.
+#     Send file content as base64 in the JSON body.
+#     """
+#     try:
+#         raw = base64.b64decode(request.content_base64)
+#     except Exception as exc:
+#         raise HTTPException(status_code=422, detail=f"Invalid base64: {exc}") from exc
+
+#     try:
+#         return ssh_service.upload_file(raw, request.remote_path)
+#     except RuntimeError as exc:
+#         raise HTTPException(status_code=500, detail=str(exc)) from exc
+
+
+# @router.post("/files/upload-multipart")
+# async def upload_file_multipart(
+#     remote_path: str,
+#     file: UploadFile = File(...),
+# ) -> dict[str, Any]:
+#     """
+#     Upload a file to the VNC container via SFTP using multipart form upload.
+#     More convenient than base64 for large files.
+#     """
+#     try:
+#         content = await file.read()
+#         return ssh_service.upload_file(content, remote_path)
+#     except RuntimeError as exc:
+#         raise HTTPException(status_code=500, detail=str(exc)) from exc
+
+
+# @router.post("/files/download")
+# def download_file(request: DownloadFileRequest) -> dict[str, Any]:
+#     """
+#     Download a file from the VNC container via SFTP.
+#     Returns base64-encoded content.
+#     """
+#     try:
+#         return ssh_service.download_file(request.remote_path)
+#     except RuntimeError as exc:
+#         raise HTTPException(status_code=500, detail=str(exc)) from exc
+
+
+# @router.post("/ls")
+# def list_directory(request: ListDirectoryRequest) -> dict[str, Any]:
+#     """List directory contents on the VNC container."""
+#     try:
+#         result = ssh_service.list_directory(request.path)
+#     except RuntimeError as exc:
+#         raise HTTPException(status_code=500, detail=str(exc)) from exc
+#     return result.to_dict()
+
+
+# @router.get("/system")
+# def system_info() -> dict[str, Any]:
+#     """Return container system snapshot: uptime, memory, disk, top processes."""
+#     try:
+#         result = ssh_service.get_system_info()
+#     except RuntimeError as exc:
+#         raise HTTPException(status_code=500, detail=str(exc)) from exc
+#     return result.to_dict()

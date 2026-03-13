@@ -57,3 +57,43 @@ def take_screenshot_base64() -> dict[str, str]:
     except Exception as e:
         logger.exception("failed to take screenshot")
         raise RuntimeError("failed to take screenshot") from e
+
+
+def get_image(image_name: str) -> str:
+    images_output_absolute_dir_path = os.path.abspath("output/screenshots")
+    safe_name = os.path.basename(image_name)
+    if safe_name != image_name or not safe_name:
+        raise FileNotFoundError("invalid image_name")
+
+    image_absolute_path = os.path.join(images_output_absolute_dir_path, safe_name)
+    if not os.path.isfile(image_absolute_path):
+        raise FileNotFoundError(f"image not found: {safe_name}")
+
+    try:
+        with open(image_absolute_path, "rb") as f:
+            encoded = base64.b64encode(f.read()).decode("ascii")
+        logger.debug("screen.get_image ok image_name=%s base64_len=%d", safe_name, len(encoded))
+        return encoded
+    except Exception as e:
+        logger.exception("screen.get_image failed image_name=%s", safe_name)
+        raise RuntimeError("failed to read image") from e
+
+
+def get_annotated_image(image_name: str) -> str:
+    images_output_absolute_dir_path = os.path.abspath("output/annotated")
+    safe_name = os.path.basename(image_name)
+    if safe_name != image_name or not safe_name:
+        raise FileNotFoundError("invalid image_name")
+
+    image_absolute_path = os.path.join(images_output_absolute_dir_path, safe_name)
+    if not os.path.isfile(image_absolute_path):
+        raise FileNotFoundError(f"image not found: {safe_name}")
+
+    try:
+        with open(image_absolute_path, "rb") as f:
+            encoded = base64.b64encode(f.read()).decode("ascii")
+        logger.debug("screen.get_annotated_image ok image_name=%s base64_len=%d", safe_name, len(encoded))
+        return encoded
+    except Exception as e:
+        logger.exception("screen.get_annotated_image failed image_name=%s", safe_name)
+        raise RuntimeError("failed to read image") from e
