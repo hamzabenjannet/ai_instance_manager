@@ -35,11 +35,11 @@ def press_key(request: PressKeyRequest) -> dict[str, str]:
         keyboard_service.press_key(request.key, interval_seconds=request.interval_seconds)
     except RuntimeError as e:
         logger.exception("keyboard.press error key=%s", request.key)
-        logger.debug("keyboard.press", "error", {"error": str(e), "key": request.key})  
+        logger.debug("keyboard.press error key=%s error=%s", request.key, str(e))
         raise HTTPException(status_code=501, detail=str(e)) from e
     except Exception as e:
         logger.exception("keyboard.press unexpected error key=%s", request.key)
-        logger.debug("keyboard.press", "error", {"error": str(e), "key": request.key})
+        logger.debug("keyboard.press error key=%s error=%s", request.key, str(e))
         raise HTTPException(status_code=500, detail="unexpected error") from e
 
     logger.debug("keyboard.press ok key=%s", request.key)

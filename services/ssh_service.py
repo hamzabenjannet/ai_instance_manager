@@ -237,14 +237,11 @@ def download_file(remote_path: str) -> dict[str, Any]:
             "data": base64.b64encode(raw).decode("ascii"),
             "success": True,
         }
-        logger.debug(event_type, "success", {
-            "remote_path": remote_path,
-            "size_bytes": len(raw),
-        })
+        logger.debug("%s success remote_path=%s size_bytes=%d", event_type, remote_path, len(raw))
         return result
     except Exception as exc:
         payload = {"remote_path": remote_path, "error": str(exc), "success": False}
-        logger.debug(event_type, "error", payload)
+        logger.debug("%s error remote_path=%s error=%s", event_type, remote_path, str(exc))
         raise RuntimeError(f"SFTP download failed: {exc}") from exc
 
 
@@ -267,8 +264,8 @@ def check_ssh_connection() -> dict[str, Any]:
             _, stdout, _ = client.exec_command("echo ok", timeout=5)
             out = stdout.read().decode().strip()
             ok = out == "ok"
-        logger.debug("ssh.health", "success", {"host": cfg.host, "port": cfg.port})
+        logger.debug("ssh.health success host=%s port=%s ok=%s", cfg.host, cfg.port, ok)
         return {"ssh_connected": ok, "host": cfg.host, "port": cfg.port}
     except Exception as exc:
-        logger.debug("ssh.health", "error", {"host": cfg.host, "error": str(exc)})
+        logger.debug("ssh.health error host=%s port=%s error=%s", cfg.host, cfg.port, str(exc))
         return {"ssh_connected": False, "host": cfg.host, "port": cfg.port, "error": str(exc)}

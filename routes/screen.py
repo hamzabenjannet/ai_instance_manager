@@ -42,9 +42,10 @@ def take_screenshot(encoded_base64: bool = Query(default=True)) -> dict[str, str
         raise HTTPException(status_code=500, detail="unexpected error") from e
 
     logger.debug(
-        "screen.screenshot",
-        "success",
-        {"encoding": "base64_png", "image_name": image_name, "base64_len": len(encoded_base64_value)},
+        "screen.screenshot success encoding=%s image_name=%s base64_len=%d",
+        "base64_png",
+        image_name,
+        len(encoded_base64_value),
     )
     logger.debug("screen.screenshot ok image_name=%s base64_len=%d", image_name, len(encoded_base64_value))
     return {"encoding": "base64_png", "encoded_base64": encoded_base64_value, "image_name": image_name}

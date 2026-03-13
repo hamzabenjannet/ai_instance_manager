@@ -405,7 +405,7 @@ async def call_tool(name: str, arguments: dict[str, Any]) -> CallToolResult:
         #     result = ssh_service.list_directory(path)
         #     logger.debug("mcp.call_tool executed ssh_list_directory")
         #     return _ok(result.to_dict())
-        # if name == "ssh_system_info":
+        if name == "ssh_system_info":
             logger.debug("mcp.call_tool executing ssh_system_info")
             result = ssh_service.get_system_info()
             logger.debug("mcp.call_tool executed ssh_system_info")
@@ -413,15 +413,15 @@ async def call_tool(name: str, arguments: dict[str, Any]) -> CallToolResult:
         logger.debug("mcp.call_tool unknown tool name=%s", name)
         return _err(f"Unknown tool: {name}")
     except FileNotFoundError as exc:
-        logger.debug("mcp.tool_call", "error", {"tool": name, "error": str(exc)})
+        logger.debug("mcp.tool_call error tool=%s error=%s", name, str(exc))
         logger.debug("mcp.call_tool FileNotFoundError name=%s error=%s", name, str(exc))
         return _err(str(exc))
     except RuntimeError as exc:
-        logger.debug("mcp.tool_call", "error", {"tool": name, "error": str(exc)})
+        logger.debug("mcp.tool_call error tool=%s error=%s", name, str(exc))
         logger.debug("mcp.call_tool RuntimeError name=%s error=%s", name, str(exc))
         return _err(str(exc))
     except Exception as exc:
-        logger.debug("mcp.tool_call", "error", {"tool": name, "error": repr(exc)})
+        logger.debug("mcp.tool_call error tool=%s error=%s", name, repr(exc))
         logger.debug("mcp.call_tool Exception name=%s error=%s", name, repr(exc))
         return _err(f"Unexpected error: {exc}")
 

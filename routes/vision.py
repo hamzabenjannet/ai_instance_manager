@@ -89,31 +89,17 @@ def detect_elements(request: VisionDetectRequest) -> dict[str, Any]:
         )
     except FileNotFoundError as e:
         logger.exception("vision.detect file not found image_name=%s", request.image_name)
-        logger.debug("vision.detect", "error", {"error": str(e), "image_name": request.image_name})
+        logger.debug("vision.detect error image_name=%s error=%s", request.image_name, str(e))
         raise HTTPException(status_code=404, detail=str(e)) from e
     except RuntimeError as e:
         logger.exception("vision.detect runtime error image_name=%s", request.image_name)
-        logger.debug("vision.detect", "error", {"error": str(e), "image_name": request.image_name})
+        logger.debug("vision.detect error image_name=%s error=%s", request.image_name, str(e))
         raise HTTPException(status_code=501, detail=str(e)) from e
     except Exception as e:
         logger.exception("vision.detect unexpected error image_name=%s", request.image_name)
-        logger.debug("vision.detect", "error", {"error": str(e), "image_name": request.image_name})
+        logger.debug("vision.detect error image_name=%s error=%s", request.image_name, str(e))
         raise HTTPException(status_code=500, detail="unexpected error") from e
 
-    logger.debug(
-        "vision.detect",
-        "success",
-        {
-            "image_name": request.image_name,
-            "use_yolo": request.use_yolo,
-            "use_cv2_heuristic": request.use_cv2_heuristic,
-            "confidence_threshold": request.confidence_threshold,
-            "count": result["count"],
-            "use_gpu": request.use_gpu,
-            "annotated_path": result.get("annotated_path"),
-            "errors": result.get("errors", []),
-        },
-    )
     logger.debug(
         "vision.detect ok image_name=%s count=%s annotated_path=%s errors_count=%d",
         request.image_name,
