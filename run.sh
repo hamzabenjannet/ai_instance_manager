@@ -6,6 +6,14 @@ source /home/headless/conda/etc/profile.d/conda.sh
 # OR
 conda activate ai_instance_manager
 
+
+
+cd "$(dirname "$0")"
+
+echo "--- current dir:"
+pwd
+
+
 # uvicorn main:app --reload --host "0.0.0.0" --port 42014 --log-level debug
 
 APP_LOG_LEVEL="debug" 

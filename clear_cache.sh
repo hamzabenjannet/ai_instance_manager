@@ -8,6 +8,14 @@
 #   ./clear_cache.sh --weights    # also delete downloaded model weights
 #   ./clear_cache.sh --all        # everything above + full HuggingFace hub cache
 # =============================================================================
+source /home/headless/conda/etc/profile.d/conda.sh
+
+conda activate ai_instance_manager
+
+cd "$(dirname "$0")"
+
+echo "--- current dir:"
+pwd
 
 set -e
 

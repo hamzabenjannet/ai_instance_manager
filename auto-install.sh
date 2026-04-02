@@ -1,8 +1,20 @@
 #!/bin/bash
+source /home/headless/conda/etc/profile.d/conda.sh
+
+
+cd "$(dirname "$0")"
+
+echo "--- current dir:"
+pwd
+
+
 conda create -n ai_instance_manager python=3.11 -c conda-forge -y
 # source activate ai_instance_manager
 # OR
 conda activate ai_instance_manager
+
+
+
 # pip install <NEEDED_MODULES>
 pip install fastapi uvicorn
 pip install --upgrade Pillow

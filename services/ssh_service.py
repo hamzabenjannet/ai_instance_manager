@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import base64
 import os
+import socket
 import stat
 from dataclasses import dataclass, field
 from io import BytesIO
@@ -78,19 +79,77 @@ def _client(cfg: SSHConfig) -> paramiko.SSHClient:
 
     key_path = Path(cfg.key_path).expanduser()
     if not key_path.exists():
-        raise FileNotFoundError(f"SSH private key not found: {key_path}")
+        fallback = Path("/root/.ssh/id_ed25519")
+        if fallback.exists():
+            key_path = fallback
+        else:
+            raise FileNotFoundError(f"SSH private key not found: {key_path}")
 
-    pkey = paramiko.RSAKey.from_private_key_file(str(key_path))
+    key_classes: list[type[paramiko.PKey]] = []
+    for attr in ("Ed25519Key", "RSAKey", "ECDSAKey", "DSSKey"):
+        cls = getattr(paramiko, attr, None)
+        if cls is not None:
+            key_classes.append(cls)
+
+    last_exc: Exception | None = None
+    pkey: paramiko.PKey | None = None
+    for cls in key_classes:
+        try:
+            pkey = cls.from_private_key_file(str(key_path))
+            break
+        except Exception as exc:
+            last_exc = exc
+
+    if pkey is None:
+        raise RuntimeError(f"Failed to load SSH private key: {key_path} ({last_exc})")
+
     client.connect(
         hostname=cfg.host,
         port=cfg.port,
         username=cfg.user,
         pkey=pkey,
         timeout=cfg.connect_timeout,
+        banner_timeout=cfg.connect_timeout,
+        auth_timeout=cfg.connect_timeout,
         allow_agent=False,
         look_for_keys=False,
     )
     return client
+
+
+def _probe_transport(host: str, port: int, timeout_seconds: float) -> dict[str, Any]:
+    try:
+        with socket.create_connection((host, port), timeout=timeout_seconds) as sock:
+            sock.settimeout(timeout_seconds)
+            try:
+                peek = sock.recv(80)
+            except TimeoutError:
+                peek = b""
+    except Exception as exc:
+        return {"tcp_connected": False, "error": str(exc)}
+
+    banner_text = ""
+    try:
+        banner_text = peek.decode("utf-8", errors="replace").strip()
+    except Exception:
+        banner_text = ""
+
+    is_ssh = peek.startswith(b"SSH-")
+    hint: str | None = None
+    if not peek:
+        hint = "tcp_connected_but_no_banner"
+    elif not is_ssh:
+        if banner_text.startswith("HTTP/") or banner_text.startswith("GET "):
+            hint = "port_looks_like_http_not_ssh"
+        else:
+            hint = "port_does_not_look_like_ssh"
+
+    return {
+        "tcp_connected": True,
+        "is_ssh_banner": is_ssh,
+        "banner_preview": banner_text[:120],
+        "hint": hint,
+    }
 
 
 # ---------------------------------------------------------------------------
@@ -267,5 +326,11 @@ def check_ssh_connection() -> dict[str, Any]:
         logger.debug("ssh.health success host=%s port=%s ok=%s", cfg.host, cfg.port, ok)
         return {"ssh_connected": ok, "host": cfg.host, "port": cfg.port}
     except Exception as exc:
+        probe = _probe_transport(cfg.host, cfg.port, timeout_seconds=1.5)
         logger.debug("ssh.health error host=%s port=%s error=%s", cfg.host, cfg.port, str(exc))
-        return {"ssh_connected": False, "host": cfg.host, "port": cfg.port, "error": str(exc)}
+        payload: dict[str, Any] = {"ssh_connected": False, "host": cfg.host, "port": cfg.port, "error": str(exc)}
+        if probe:
+            payload["probe"] = probe
+        if probe.get("tcp_connected") and not probe.get("is_ssh_banner"):
+            payload["hint"] = "SSH service is not responding on this port; check SSH_PORT or ensure sshd is running"
+        return payload

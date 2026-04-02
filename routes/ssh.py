@@ -82,9 +82,9 @@ def _raise_on_error(result: ssh_service.CommandResult) -> None:
 def ssh_health() -> dict[str, Any]:
     """Ping the SSH connection — safe health-check probe."""
     logger.debug("ssh.health checking connection")
-    ssh_service.check_ssh_connection = ssh_service.check_ssh_connection()
-    logger.debug("ssh.health ok %s", ssh_service.check_ssh_connection)
-    return ssh_service.check_ssh_connection
+    result = ssh_service.check_ssh_connection()
+    logger.debug("ssh.health ok %s", result)
+    return result
 
 
 @router.post("/run")
